@@ -15,6 +15,10 @@ avatar: https://avatars2.githubusercontent.com/u/18058121?v=3&s=460
 # Flags below are optional
 #
 
+# Used by the write page when opening GitHub to add a post
+github_repo: Shounak710/Shounak710.github.io
+github_branch: master
+
 # Includes an icon in the footer for each username you enter
 footer-links:
   dribbble:
@@ -25,7 +29,7 @@ footer-links:
   instagram:
   linkedin:
   pinterest:
-  rss: # just type anything here for a working RSS icon
+  rss: feed
   twitter:
   stackoverflow: # your stackoverflow profile, e.g. "users/50476/bart-kiers"
   youtube: # channel/<your_long_string> or user/<user-name>
@@ -73,9 +77,12 @@ sass:
   style: :expanded # You might prefer to minify using :compressed
 
 # Use the following plug-ins
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
 gems:
-  - jekyll-sitemap # Create a sitemap using the official Jekyll sitemap gem
-  - jekyll-feed # Create an Atom feed using the official Jekyll feed gem
+  - jekyll-sitemap
+  - jekyll-feed
 
 # Exclude these files from your production _site
 exclude:
@@ -84,3 +91,4 @@ exclude:
   - LICENSE
   - README.md
   - CNAME
+  - scripts

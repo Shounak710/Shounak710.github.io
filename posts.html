@@ -1,0 +1,25 @@
+---
+layout: default
+title: All posts
+permalink: /posts/
+---
+
+<section class="page-head measure">
+  <p class="eyebrow">Index</p>
+  <h1>All blog posts</h1>
+  <p>Published notes live here, along with anything you have saved in this browser from the writer.</p>
+</section>
+
+<div class="section-head">
+  <h2>The ledger</h2>
+  <a class="btn btn-primary" href="{{ site.baseurl }}/write/">New post</a>
+</div>
+
+<div class="ledger" id="post-ledger" data-post-ledger>
+  {% for post in site.posts %}
+    {% include post-row.html post=post %}
+  {% endfor %}
+  {% if site.posts.size == 0 %}
+    <p class="empty-state" data-empty-published>No published posts yet.</p>
+  {% endif %}
+</div>

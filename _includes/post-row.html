@@ -1,0 +1,21 @@
+<article class="ledger-row">
+  <time class="ledger-date" datetime="{{ include.post.date | date: '%Y-%m-%d' }}">
+    {{ include.post.date | date: "%d %b %Y" }}
+  </time>
+  <div class="ledger-body">
+    <h3 class="ledger-title">
+      <a href="{{ site.baseurl }}{{ include.post.url }}">{{ include.post.title }}</a>
+    </h3>
+    {% if include.post.excerpt %}
+    <p class="ledger-excerpt">{{ include.post.excerpt | strip_html | truncate: 180 }}</p>
+    {% endif %}
+    <div class="ledger-meta">
+      {% if include.post.tags.size > 0 %}
+        {% for tag in include.post.tags %}
+          <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      {% endif %}
+      <a class="read-more" href="{{ site.baseurl }}{{ include.post.url }}">Read note</a>
+    </div>
+  </div>
+</article>
