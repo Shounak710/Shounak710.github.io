@@ -250,6 +250,12 @@ p { margin: 0 0 1em; }
   border: 1px solid rgba(255, 107, 92, 0.35);
 }
 
+.btn-danger:hover {
+  background: var(--danger);
+  color: #fff;
+  filter: none;
+}
+
 .actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
 
 .section {
@@ -488,12 +494,24 @@ textarea {
   margin-top: 2.5rem;
 }
 
-.existing a {
-  display: block;
+.existing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.existing-row a {
   text-decoration: none;
   color: var(--fg);
+  min-width: 0;
+}
+
+.existing-row .btn {
+  flex-shrink: 0;
+  padding: 0.45rem 0.7rem;
 }
 
 @media (max-width: 800px) {

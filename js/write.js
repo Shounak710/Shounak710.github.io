@@ -85,6 +85,26 @@
     });
   }
 
+  function deleteFile(token, path, message, sha) {
+    return fetch(API + "/repos/" + SITE.githubUser + "/" + SITE.githubRepo + "/contents/" + path, {
+      method: "DELETE",
+      headers: Object.assign({ "Content-Type": "application/json" }, headers(token)),
+      body: JSON.stringify({
+        message: message,
+        sha: sha,
+        branch: SITE.githubBranch
+      })
+    }).then(function (res) {
+      if (res.status === 404) return null;
+      if (!res.ok) {
+        return res.json().then(function (err) {
+          throw new Error((err && err.message) || "GitHub delete failed");
+        });
+      }
+      return res.json();
+    });
+  }
+
   function isAllowed(login) {
     return (SITE.allowedAuthors || []).some(function (name) {
       return name.toLowerCase() === String(login || "").toLowerCase();
@@ -113,9 +133,27 @@
       return;
     }
     box.innerHTML = posts.map(function (post) {
-      return '<a href="/write/?slug=' + encodeURIComponent(post.slug) + '">' +
-        Blog.escapeHtml(post.title) + " <span class=\"muted\">" + post.date + "</span></a>";
+      return (
+        '<div class="existing-row">' +
+          '<a href="/write/?slug=' + encodeURIComponent(post.slug) + '">' +
+            Blog.escapeHtml(post.title) +
+            ' <span class="muted">' + post.date + "</span>" +
+          "</a>" +
+          '<button class="btn btn-danger" type="button" data-delete-slug="' +
+            Blog.escapeHtml(post.slug) + '">Delete</button>' +
+        "</div>"
+      );
     }).join("");
+  }
+
+  function clearForm() {
+    qs("[data-title]").value = "";
+    qs("[data-excerpt]").value = "";
+    qs("[data-tags]").value = "";
+    qs("[data-body]").value = "";
+    preview();
+    var del = qs("[data-delete-current]");
+    if (del) del.hidden = true;
   }
 
   function collectForm() {
@@ -138,7 +176,7 @@
   function init() {
     var tokenInput = qs("[data-token]");
     var stored = sessionStorage.getItem(TOKEN_KEY);
-    var state = { token: stored, user: null, posts: [], categories: [] };
+    var state = { token: stored, user: null, posts: [], categories: [], currentSlug: null };
 
     function afterAuth(user, token) {
       if (!isAllowed(user.login)) {
@@ -160,6 +198,8 @@
         if (!slug) return;
         var post = state.posts.filter(function (item) { return item.slug === slug; })[0];
         if (!post) return;
+        state.currentSlug = slug;
+        qs("[data-delete-current]").hidden = false;
         qs("[data-title]").value = post.title;
         qs("[data-excerpt]").value = post.excerpt || "";
         qs("[data-tags]").value = (post.tags || []).join(", ");
@@ -274,14 +314,75 @@
         );
       }).then(function () {
         state.posts = nextPosts;
+        state.currentSlug = slug;
         categoriesDirty = false;
         listExisting(state.posts);
+        qs("[data-delete-current]").hidden = false;
+        history.replaceState({}, "", "/write/?slug=" + encodeURIComponent(slug));
         notice("ok", "Published. GitHub Pages will refresh in a minute. View: " + Blog.postHref(slug));
         qs("[data-publish]").disabled = false;
       }).catch(function (err) {
         notice("error", err.message);
         qs("[data-publish]").disabled = false;
       });
+    });
+
+    function removePost(slug) {
+      var post = state.posts.filter(function (item) { return item.slug === slug; })[0];
+      if (!post) {
+        notice("error", "That post is not in the index.");
+        return;
+      }
+      if (!window.confirm("Delete “" + post.title + "”? This removes it from GitHub.")) return;
+
+      var nextPosts = state.posts.filter(function (item) { return item.slug !== slug; });
+      var buttons = Blog.qsa("[data-delete-slug], [data-delete-current]");
+      buttons.forEach(function (btn) { btn.disabled = true; });
+      notice("", "Deleting…");
+
+      getFile(state.token, post.file).then(function (file) {
+        if (!file || !file.sha) return null;
+        return deleteFile(state.token, post.file, "Delete post: " + post.title, file.sha);
+      }).then(function () {
+        return getFile(state.token, "data/posts.json");
+      }).then(function (file) {
+        return putFile(
+          state.token,
+          "data/posts.json",
+          JSON.stringify({ posts: nextPosts }, null, 2) + "\n",
+          "Remove post from index: " + post.title,
+          file && file.sha
+        );
+      }).then(function () {
+        state.posts = nextPosts;
+        listExisting(state.posts);
+        if (state.currentSlug === slug || slugify(qs("[data-title]").value) === slug) {
+          state.currentSlug = null;
+          clearForm();
+          history.replaceState({}, "", "/write/");
+        }
+        notice("ok", "Deleted “" + post.title + "”. GitHub Pages will refresh in a minute.");
+        buttons.forEach(function (btn) { btn.disabled = false; });
+      }).catch(function (err) {
+        notice("error", err.message);
+        buttons.forEach(function (btn) { btn.disabled = false; });
+      });
+    }
+
+    qs("[data-existing]").addEventListener("click", function (event) {
+      var button = event.target.closest("[data-delete-slug]");
+      if (!button) return;
+      event.preventDefault();
+      removePost(button.getAttribute("data-delete-slug"));
+    });
+
+    qs("[data-delete-current]").addEventListener("click", function () {
+      var slug = state.currentSlug || slugify(qs("[data-title]").value);
+      if (!slug) {
+        notice("error", "Open a post before deleting it.");
+        return;
+      }
+      removePost(slug);
     });
   }
 
