@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shounak Kulkarni</title>
-  <meta name="description" content="Notes on building — code, campus, and the rest.">
+  <title>Post — Shounak Kulkarni</title>
   <script>
     (function () {
       var theme = null;
@@ -29,7 +28,7 @@
         Shounak Kulkarni
       </a>
       <nav class="nav">
-        <a class="is-active" href="/">Home</a>
+        <a href="/">Home</a>
         <a href="/blog/">Blog</a>
         <button class="theme-toggle" type="button" data-theme-toggle>
           <span data-theme-label>Dark</span>
@@ -38,41 +37,25 @@
     </div>
   </header>
 
-  <main id="main" class="site-main">
-    <section class="wrap hero">
-      <div>
-        <p class="kicker">IIT Bombay · Civil Engineering</p>
-        <h1>Shounak<br>Kulkarni</h1>
-      </div>
-      <div>
-        <p class="hero-copy">I build things from a laptop — web work for campus, and notes on code, logic, chess, and cricket. This is the public notebook.</p>
-        <div class="actions">
-          <a class="btn" href="/blog/">Read the blog</a>
-          <a class="btn btn-ghost" href="https://github.com/Shounak710">GitHub</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="wrap section">
-      <div class="section-head">
-        <h2>Latest</h2>
-        <a href="/blog/">All posts</a>
-      </div>
-      <div class="post-list" data-home-list>
-        <p class="muted">Loading…</p>
-      </div>
-    </section>
+  <main id="main" class="site-main wrap">
+    <article class="article" data-article>
+      <p class="kicker" data-kicker>Post</p>
+      <h1 data-title>Loading…</h1>
+      <p class="mono" data-date></p>
+      <div class="meta-row" data-tags style="margin: 1rem 0 1.8rem;"></div>
+      <div class="article-body" data-body></div>
+    </article>
   </main>
 
   <footer class="site-footer">
     <div class="wrap footer-row">
       <span>© <span data-year></span> Shounak Kulkarni</span>
-      <a href="https://github.com/Shounak710">GitHub</a>
+      <a href="/blog/">Back to blog</a>
     </div>
   </footer>
 
   <script src="/js/config.js"></script>
   <script src="/js/core.js"></script>
-  <script src="/js/home.js"></script>
+  <script src="/js/post.js"></script>
 </body>
 </html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Write — Shounak Kulkarni</title>
+  <script>
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("sk-theme"); } catch (e) {}
+      if (theme !== "light" && theme !== "dark") {
+        theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      }
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="/">
+        <span class="brand-mark">SK</span>
+        Shounak Kulkarni
+      </a>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <button class="theme-toggle" type="button" data-theme-toggle>
+          <span data-theme-label>Dark</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="site-main wrap">
+    <div class="notice" data-notice hidden></div>
+
+    <section class="gate" data-gate>
+      <p class="kicker">Author only</p>
+      <h1>Write desk</h1>
+      <p class="help">This page publishes to GitHub. Sign in with a personal access token for <strong>Shounak710</strong>. Anyone else is turned away.</p>
+      <form data-login>
+        <label for="token">GitHub token</label>
+        <input id="token" data-token type="password" autocomplete="off" placeholder="ghp_… or github_pat_…">
+        <button class="btn" type="submit">Unlock</button>
+      </form>
+      <p class="help" style="margin-top: 1rem;">
+        Create a fine-grained token with access to <code>Shounak710/Shounak710.github.io</code>
+        and permission <strong>Contents: Read and write</strong>.
+        <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">Generate one</a>.
+        The token stays in this browser tab only.
+      </p>
+    </section>
+
+    <section class="editor" data-editor>
+      <div class="section-head">
+        <div>
+          <p class="kicker">Signed in as <span data-who></span></p>
+          <h1>New post</h1>
+        </div>
+        <button class="btn btn-ghost" type="button" data-logout>Log out</button>
+      </div>
+
+      <label for="title">Title</label>
+      <input id="title" data-title type="text" maxlength="140" placeholder="What is this about?">
+
+      <label for="excerpt">Excerpt</label>
+      <input id="excerpt" data-excerpt type="text" maxlength="220" placeholder="One or two sentences for the listing">
+
+      <div class="row-2">
+        <div>
+          <label for="category">Category</label>
+          <select id="category" data-category></select>
+        </div>
+        <div>
+          <label for="new-category">Add a category</label>
+          <div class="cat-add">
+            <input id="new-category" data-new-category type="text" placeholder="e.g. Travel">
+            <button class="btn btn-ghost" type="button" data-add-category>Add</button>
+          </div>
+        </div>
+      </div>
+
+      <label for="tags">Tags</label>
+      <input id="tags" data-tags type="text" placeholder="comma, separated, tags">
+
+      <div class="editor-grid">
+        <div>
+          <label for="body">Markdown</label>
+          <textarea id="body" data-body placeholder="Write the post…"></textarea>
+        </div>
+        <div>
+          <label>Preview</label>
+          <div class="preview article-body" data-preview>
+            <p class="muted">Preview appears here.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="button" data-publish>Publish to GitHub</button>
+      </div>
+      <p class="help">Publish writes the Markdown file and updates the blog index. GitHub Pages will rebuild shortly after.</p>
+
+      <div class="existing">
+        <h2>Your posts</h2>
+        <div data-existing></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <span>© <span data-year></span> Shounak Kulkarni</span>
+      <span class="muted">Unlisted writing desk</span>
+    </div>
+  </footer>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/write.js"></script>
+</body>
+</html>

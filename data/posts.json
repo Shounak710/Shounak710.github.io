@@ -1,0 +1,13 @@
+{
+  "posts": [
+    {
+      "slug": "hello",
+      "title": "Starting this notebook",
+      "excerpt": "A new place for notes on building — code, campus, and whatever else earns a page.",
+      "category": "notes",
+      "tags": ["hello", "meta"],
+      "date": "2026-09-10",
+      "file": "posts/hello.md"
+    }
+  ]
+}

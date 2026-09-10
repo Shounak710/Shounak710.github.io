@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shounak Kulkarni</title>
-  <meta name="description" content="Notes on building — code, campus, and the rest.">
+  <title>Blog — Shounak Kulkarni</title>
+  <meta name="description" content="All posts, by category and tag.">
   <script>
     (function () {
       var theme = null;
@@ -29,8 +29,8 @@
         Shounak Kulkarni
       </a>
       <nav class="nav">
-        <a class="is-active" href="/">Home</a>
-        <a href="/blog/">Blog</a>
+        <a href="/">Home</a>
+        <a class="is-active" href="/blog/">Blog</a>
         <button class="theme-toggle" type="button" data-theme-toggle>
           <span data-theme-label>Dark</span>
         </button>
@@ -38,30 +38,16 @@
     </div>
   </header>
 
-  <main id="main" class="site-main">
-    <section class="wrap hero">
-      <div>
-        <p class="kicker">IIT Bombay · Civil Engineering</p>
-        <h1>Shounak<br>Kulkarni</h1>
-      </div>
-      <div>
-        <p class="hero-copy">I build things from a laptop — web work for campus, and notes on code, logic, chess, and cricket. This is the public notebook.</p>
-        <div class="actions">
-          <a class="btn" href="/blog/">Read the blog</a>
-          <a class="btn btn-ghost" href="https://github.com/Shounak710">GitHub</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="wrap section">
-      <div class="section-head">
-        <h2>Latest</h2>
-        <a href="/blog/">All posts</a>
-      </div>
-      <div class="post-list" data-home-list>
-        <p class="muted">Loading…</p>
-      </div>
-    </section>
+  <main id="main" class="site-main wrap" data-blog>
+    <header class="page-head">
+      <p class="kicker">Index</p>
+      <h1>Blog</h1>
+      <p class="muted">Filter by category or tag. New piles can be added from the writing desk.</p>
+    </header>
+    <div class="filters" data-filters></div>
+    <div class="post-list" data-list>
+      <p class="muted">Loading…</p>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -73,6 +59,6 @@
 
   <script src="/js/config.js"></script>
   <script src="/js/core.js"></script>
-  <script src="/js/home.js"></script>
+  <script src="/js/blog.js"></script>
 </body>
 </html>

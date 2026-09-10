@@ -1,0 +1,7 @@
+{
+  "categories": [
+    { "slug": "notes", "name": "Notes" },
+    { "slug": "code", "name": "Code" },
+    { "slug": "campus", "name": "Campus" }
+  ]
+}
