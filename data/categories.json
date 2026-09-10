@@ -1,7 +1,20 @@
 {
   "categories": [
-    { "slug": "notes", "name": "Notes" },
-    { "slug": "code", "name": "Code" },
-    { "slug": "campus", "name": "Campus" }
+    {
+      "slug": "notes",
+      "name": "Notes"
+    },
+    {
+      "slug": "code",
+      "name": "Code"
+    },
+    {
+      "slug": "campus",
+      "name": "Campus"
+    },
+    {
+      "slug": "shree",
+      "name": "shree"
+    }
   ]
 }
