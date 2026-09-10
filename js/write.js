@@ -54,54 +54,98 @@
     });
   }
 
+  function repoUrl(path) {
+    return API + "/repos/" + SITE.githubUser + "/" + SITE.githubRepo + path;
+  }
+
+  function githubJson(token, method, path, body) {
+    var opts = {
+      method: method,
+      headers: Object.assign({ "Content-Type": "application/json" }, headers(token))
+    };
+    if (body !== undefined) opts.body = JSON.stringify(body);
+    return fetch(repoUrl(path), opts).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.message || "GitHub request failed");
+        return data;
+      });
+    });
+  }
+
   function getFile(token, path) {
-    var url = API + "/repos/" + SITE.githubUser + "/" + SITE.githubRepo +
-      "/contents/" + path + "?ref=" + encodeURIComponent(SITE.githubBranch);
-    return fetch(url, { headers: headers(token) }).then(function (res) {
+    var url = repoUrl("/contents/" + path) +
+      "?ref=" + encodeURIComponent(SITE.githubBranch) + "&t=" + Date.now();
+    return fetch(url, {
+      headers: Object.assign({ "Cache-Control": "no-cache" }, headers(token)),
+      cache: "no-store"
+    }).then(function (res) {
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Could not read " + path);
       return res.json();
     });
   }
 
-  function putFile(token, path, content, message, sha) {
-    var body = {
-      message: message,
-      content: encodeContent(content),
-      branch: SITE.githubBranch
-    };
-    if (sha) body.sha = sha;
-    return fetch(API + "/repos/" + SITE.githubUser + "/" + SITE.githubRepo + "/contents/" + path, {
-      method: "PUT",
-      headers: Object.assign({ "Content-Type": "application/json" }, headers(token)),
-      body: JSON.stringify(body)
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.json().then(function (err) {
-          throw new Error((err && err.message) || "GitHub write failed");
-        });
-      }
-      return res.json();
+  function readJsonFile(token, path) {
+    return getFile(token, path).then(function (file) {
+      if (!file || !file.content) return null;
+      return JSON.parse(decodeContent(file.content.replace(/\s/g, "")));
     });
   }
 
-  function deleteFile(token, path, message, sha) {
-    return fetch(API + "/repos/" + SITE.githubUser + "/" + SITE.githubRepo + "/contents/" + path, {
-      method: "DELETE",
-      headers: Object.assign({ "Content-Type": "application/json" }, headers(token)),
-      body: JSON.stringify({
-        message: message,
-        sha: sha,
-        branch: SITE.githubBranch
-      })
-    }).then(function (res) {
-      if (res.status === 404) return null;
-      if (!res.ok) {
-        return res.json().then(function (err) {
-          throw new Error((err && err.message) || "GitHub delete failed");
+  function loadRepoData(token) {
+    return Promise.all([
+      readJsonFile(token, "data/posts.json"),
+      readJsonFile(token, "data/categories.json")
+    ]).then(function (pair) {
+      var posts = (pair[0] && pair[0].posts) || [];
+      return {
+        posts: posts.slice().sort(function (a, b) {
+          return a.date < b.date ? 1 : -1;
+        }),
+        categories: (pair[1] && pair[1].categories) || []
+      };
+    });
+  }
+
+  function commitFiles(token, message, changes) {
+    var branch = SITE.githubBranch;
+    return githubJson(token, "GET", "/git/ref/heads/" + encodeURIComponent(branch)).then(function (ref) {
+      var commitSha = ref.object.sha;
+      return githubJson(token, "GET", "/git/commits/" + commitSha).then(function (commit) {
+        var treeItems = [];
+        return Promise.all(changes.map(function (change) {
+          if (change.delete) {
+            treeItems.push({ path: change.path, mode: "100644", type: "blob", sha: null });
+            return null;
+          }
+          return githubJson(token, "POST", "/git/blobs", {
+            content: change.content,
+            encoding: "utf-8"
+          }).then(function (blob) {
+            treeItems.push({
+              path: change.path,
+              mode: "100644",
+              type: "blob",
+              sha: blob.sha
+            });
+          });
+        })).then(function () {
+          return githubJson(token, "POST", "/git/trees", {
+            base_tree: commit.tree.sha,
+            tree: treeItems
+          });
+        }).then(function (tree) {
+          return githubJson(token, "POST", "/git/commits", {
+            message: message,
+            tree: tree.sha,
+            parents: [commitSha]
+          });
+        }).then(function (newCommit) {
+          return githubJson(token, "PATCH", "/git/refs/heads/" + encodeURIComponent(branch), {
+            sha: newCommit.sha
+          });
         });
-      }
-      return res.json();
+      });
     });
   }
 
@@ -199,7 +243,7 @@
       sessionStorage.setItem(TOKEN_KEY, token);
       showEditor(user);
       notice("", "");
-      return Blog.loadData().then(function (data) {
+      return loadRepoData(token).then(function (data) {
         state.posts = data.posts;
         state.categories = data.categories;
         fillCategories(state.categories);
@@ -304,34 +348,27 @@
       notice("", "Publishing to GitHub…");
       qs("[data-publish]").disabled = true;
 
-      getFile(state.token, meta.file).then(function (file) {
-        return putFile(
+      loadRepoData(state.token).then(function (live) {
+        var latest = live.posts;
+        var already = latest.filter(function (post) { return post.slug === slug; })[0];
+        meta.date = already ? already.date : meta.date;
+        nextPosts = already
+          ? latest.map(function (post) { return post.slug === slug ? meta : post; })
+          : [meta].concat(latest);
+        var changes = [
+          { path: meta.file, content: data.body.replace(/\n$/, "") + "\n" },
+          { path: "data/posts.json", content: JSON.stringify({ posts: nextPosts }, null, 2) + "\n" }
+        ];
+        if (categoriesDirty) {
+          changes.push({
+            path: "data/categories.json",
+            content: JSON.stringify({ categories: state.categories }, null, 2) + "\n"
+          });
+        }
+        return commitFiles(
           state.token,
-          meta.file,
-          data.body.replace(/\n$/, "") + "\n",
-          (existing ? "Update" : "Add") + " post: " + data.title,
-          file && file.sha
-        );
-      }).then(function () {
-        if (!categoriesDirty) return null;
-        return getFile(state.token, "data/categories.json").then(function (file) {
-          return putFile(
-            state.token,
-            "data/categories.json",
-            JSON.stringify({ categories: state.categories }, null, 2) + "\n",
-            "Update categories",
-            file && file.sha
-          );
-        });
-      }).then(function () {
-        return getFile(state.token, "data/posts.json");
-      }).then(function (file) {
-        return putFile(
-          state.token,
-          "data/posts.json",
-          JSON.stringify({ posts: nextPosts }, null, 2) + "\n",
-          "Update post index",
-          file && file.sha
+          (already ? "Update" : "Add") + " post: " + data.title,
+          changes
         );
       }).then(function () {
         state.posts = nextPosts;
@@ -362,19 +399,13 @@
       buttons.forEach(function (btn) { btn.disabled = true; });
       notice("", "Deleting…");
 
-      getFile(state.token, post.file).then(function (file) {
-        if (!file || !file.sha) return null;
-        return deleteFile(state.token, post.file, "Delete post: " + post.title, file.sha);
-      }).then(function () {
-        return getFile(state.token, "data/posts.json");
-      }).then(function (file) {
-        return putFile(
-          state.token,
-          "data/posts.json",
-          JSON.stringify({ posts: nextPosts }, null, 2) + "\n",
-          "Remove post from index: " + post.title,
-          file && file.sha
-        );
+      loadRepoData(state.token).then(function (live) {
+        nextPosts = live.posts.filter(function (item) { return item.slug !== slug; });
+        var filePath = post.file || "posts/" + slug + ".md";
+        return commitFiles(state.token, "Delete post: " + post.title, [
+          { path: filePath, delete: true },
+          { path: "data/posts.json", content: JSON.stringify({ posts: nextPosts }, null, 2) + "\n" }
+        ]);
       }).then(function () {
         state.posts = nextPosts;
         listExisting(state.posts);
