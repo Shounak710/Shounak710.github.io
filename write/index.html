@@ -17,17 +17,14 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap header-row">
-      <a class="brand" href="/">
-        <span class="brand-mark">SK</span>
-        Shounak Kulkarni
-      </a>
+      <a class="brand" href="/">Shounak Kulkarni</a>
       <nav class="nav">
         <a href="/">Home</a>
         <a href="/blog/">Blog</a>
@@ -62,9 +59,12 @@
       <div class="section-head">
         <div>
           <p class="kicker">Signed in as <span data-who></span></p>
-          <h1>New post</h1>
+          <h1 data-editor-heading>New post</h1>
         </div>
-        <button class="btn btn-ghost" type="button" data-logout>Log out</button>
+        <div class="actions">
+          <button class="btn btn-ghost" type="button" data-new-post>New</button>
+          <button class="btn btn-ghost" type="button" data-logout>Log out</button>
+        </div>
       </div>
 
       <label for="title">Title</label>
@@ -104,10 +104,10 @@
       </div>
 
       <div class="actions">
-        <button class="btn" type="button" data-publish>Publish to GitHub</button>
-        <button class="btn btn-danger" type="button" data-delete-current hidden>Delete this post</button>
+        <button class="btn" type="button" data-publish>Publish</button>
+        <button class="text-btn danger" type="button" data-delete-current hidden>Delete</button>
       </div>
-      <p class="help">Publish writes the Markdown file and updates the blog index. Delete removes the file and listing. GitHub Pages will rebuild shortly after.</p>
+      <p class="help">Publishing and deleting update GitHub. The live site refreshes after Pages rebuilds.</p>
 
       <div class="existing">
         <h2>Your posts</h2>

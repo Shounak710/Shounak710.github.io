@@ -135,15 +135,26 @@
     box.innerHTML = posts.map(function (post) {
       return (
         '<div class="existing-row">' +
-          '<a href="/write/?slug=' + encodeURIComponent(post.slug) + '">' +
-            Blog.escapeHtml(post.title) +
-            ' <span class="muted">' + post.date + "</span>" +
-          "</a>" +
-          '<button class="btn btn-danger" type="button" data-delete-slug="' +
-            Blog.escapeHtml(post.slug) + '">Delete</button>' +
+          "<div>" +
+            '<span class="existing-title">' + Blog.escapeHtml(post.title) + "</span>" +
+            '<span class="muted">' + post.date + "</span>" +
+          "</div>" +
+          '<div class="existing-actions">' +
+            '<button class="text-btn" type="button" data-edit-slug="' +
+              Blog.escapeHtml(post.slug) + '">Edit</button>' +
+            '<button class="text-btn danger" type="button" data-delete-slug="' +
+              Blog.escapeHtml(post.slug) + '">Delete</button>' +
+          "</div>" +
         "</div>"
       );
     }).join("");
+  }
+
+  function setEditorMode(editing) {
+    var heading = qs("[data-editor-heading]");
+    if (heading) heading.textContent = editing ? "Edit post" : "New post";
+    var del = qs("[data-delete-current]");
+    if (del) del.hidden = !editing;
   }
 
   function clearForm() {
@@ -152,8 +163,7 @@
     qs("[data-tags]").value = "";
     qs("[data-body]").value = "";
     preview();
-    var del = qs("[data-delete-current]");
-    if (del) del.hidden = true;
+    setEditorMode(false);
   }
 
   function collectForm() {
@@ -195,21 +205,32 @@
         fillCategories(state.categories);
         listExisting(state.posts);
         var slug = Blog.query().get("slug");
-        if (!slug) return;
-        var post = state.posts.filter(function (item) { return item.slug === slug; })[0];
-        if (!post) return;
-        state.currentSlug = slug;
-        qs("[data-delete-current]").hidden = false;
-        qs("[data-title]").value = post.title;
-        qs("[data-excerpt]").value = post.excerpt || "";
-        qs("[data-tags]").value = (post.tags || []).join(", ");
-        fillCategories(state.categories, post.category);
-        return fetch("/" + post.file, { cache: "no-store" }).then(function (res) { return res.text(); }).then(function (body) {
-          qs("[data-body]").value = body;
-          preview();
-        });
+        if (slug) return loadPost(slug);
       }).catch(function (err) {
         notice("error", err.message);
+      });
+    }
+
+    function loadPost(slug) {
+      var post = state.posts.filter(function (item) { return item.slug === slug; })[0];
+      if (!post) {
+        notice("error", "That post is not in the index.");
+        return Promise.resolve();
+      }
+      state.currentSlug = slug;
+      setEditorMode(true);
+      qs("[data-title]").value = post.title;
+      qs("[data-excerpt]").value = post.excerpt || "";
+      qs("[data-tags]").value = (post.tags || []).join(", ");
+      fillCategories(state.categories, post.category);
+      history.replaceState({}, "", "/write/?slug=" + encodeURIComponent(slug));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return fetch("/" + post.file, { cache: "no-store" }).then(function (res) {
+        if (!res.ok) throw new Error("Could not load the post file.");
+        return res.text();
+      }).then(function (body) {
+        qs("[data-body]").value = body;
+        preview();
       });
     }
 
@@ -318,6 +339,7 @@
         categoriesDirty = false;
         listExisting(state.posts);
         qs("[data-delete-current]").hidden = false;
+        setEditorMode(true);
         history.replaceState({}, "", "/write/?slug=" + encodeURIComponent(slug));
         notice("ok", "Published. GitHub Pages will refresh in a minute. View: " + Blog.postHref(slug));
         qs("[data-publish]").disabled = false;
@@ -370,10 +392,24 @@
     }
 
     qs("[data-existing]").addEventListener("click", function (event) {
+      var edit = event.target.closest("[data-edit-slug]");
+      if (edit) {
+        event.preventDefault();
+        loadPost(edit.getAttribute("data-edit-slug")).catch(function (err) {
+          notice("error", err.message);
+        });
+        return;
+      }
       var button = event.target.closest("[data-delete-slug]");
       if (!button) return;
       event.preventDefault();
       removePost(button.getAttribute("data-delete-slug"));
+    });
+
+    qs("[data-new-post]").addEventListener("click", function () {
+      state.currentSlug = null;
+      clearForm();
+      history.replaceState({}, "", "/write/");
     });
 
     qs("[data-delete-current]").addEventListener("click", function () {

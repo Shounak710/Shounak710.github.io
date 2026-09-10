@@ -125,16 +125,14 @@
     }).join("");
     return (
       '<article class="post-card">' +
-        '<div class="post-date">' + formatDate(post.date) + "</div>" +
-        "<div>" +
-          '<h3 class="post-title"><a href="' + postHref(post.slug) + '">' + escapeHtml(post.title) + "</a></h3>" +
-          (post.excerpt ? '<p class="post-excerpt">' + escapeHtml(post.excerpt) + "</p>" : "") +
-          '<div class="meta-row">' +
-            '<a class="chip chip-tag" href="/blog/?category=' + encodeURIComponent(post.category) + '">' +
-              escapeHtml(categoryName(categories, post.category)) +
-            "</a>" +
-            tags +
-          "</div>" +
+        '<h3 class="post-title"><a href="' + postHref(post.slug) + '">' + escapeHtml(post.title) + "</a></h3>" +
+        '<p class="post-date">' + formatDate(post.date) + "</p>" +
+        (post.excerpt ? '<p class="post-excerpt">' + escapeHtml(post.excerpt) + "</p>" : "") +
+        '<div class="meta-row">' +
+          '<a class="chip" href="/blog/?category=' + encodeURIComponent(post.category) + '">' +
+            escapeHtml(categoryName(categories, post.category)) +
+          "</a>" +
+          tags +
         "</div>" +
       "</article>"
     );
